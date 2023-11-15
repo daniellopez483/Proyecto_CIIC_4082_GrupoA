@@ -1,0 +1,117 @@
+how to compile:
+ca65 src/controllers.asm
+ca65 src/helloworld.asm
+ca65 src/reset.asm
+ld65 src/controllers.o src/reset.o src/helloworld.o -C nes.cfg -o helloworld.nes
+
+first 2 lines create helloworld.o and reset.o (se guardan en src)
+3rd line creates helloworld.nes wich can be run on fceux
+
+A game is made up of 3 components:
+- graphics displayed on a screen
+- user input through some kind of controller
+- audio for music and sound effects
+
+Graphical updates happen during Vblank because Hblank is too short
+
+Incrementing and Decrementing Opcodes
+INX or INY increase X or Y by 1
+DEX ir DEY decrease X or Y by 1
+INC or DEC to increment or decrement contents of a memory address ej: INC $05
+**all of these update the values of the Zero and Carry flags of the processor status register
+
+Branching Opcodes
+BEQ Branch if Equals zero
+BNE Branch if Not Equal to 0; whatever math happened before this call
+BCS Branch if Carry Set
+BCC Branch if Carry Cleared
+
+Making Comparisons
+CMP Compare (with accumulator) ej: CMP #$80
+CPX Compare with X register
+CPY Compare with Y register
+    register is larger:
+        Carry flag set
+        Zero flag clear
+    register is equal:
+        Carry flag set
+        Zero flag set
+    register is smaller:
+        Carry flag clear
+        Zero flag set
+
+TAX copies A into X
+STA stores A into a given memory address
+
+para usar zero page addressing we MUST use zero page addressing (just one byte)
+    ej: LDA $3b
+
+    "So, using zero-page addressing gives us very fast access 
+    to 256 bytes of memory. Those 256 bytes are the ideal place 
+    to store values that your game will need to update or reference 
+    frequently, making them an ideal place to record things like the 
+    current score, the number of lives the player has, which stage or 
+    level the player is in, and the positions of the player, enemies, 
+    projectiles, etc."
+
+    "So, using zero-page addressing gives us very fast access to 
+    256 bytes of memory. Those 256 bytes are the ideal place to store 
+    values that your game will need to update or reference frequently, 
+    making them an ideal place to record things like the current score, 
+    the number of lives the player has, which stage or level the player 
+    is in, and the positions of the player, enemies, projectiles, etc."
+
+Subroutine
+RTS return from Subroutine
+JSR subroutine_name  Jump to subroutine
+
+Subroutine Register Management
+PHA push the accumulator onto the stack
+PHP push the processor status register onto the stack
+PLA pull the top value and place it onto the accumulator from stack
+PLP pull the top value and place it onto the processor status register from the stack
+
+para X y Y, debes transfer them onto A (TXA / TYA) then pull and (TAX / TAY)
+
+orden sugerido:
+.proc my_subroutine
+  PHP
+  PHA
+  TXA
+  PHA
+  TYA
+  PHA
+
+  ; your actual subroutine code here
+
+  PLA
+  TAY
+  PLA
+  TAX
+  PLA
+  PLP
+  RTS
+.endproc
+
+ejemplo de sprites
+sprites:
+.byte $70, $05, $00, $80    ;Y-coord, Tile number, Attributes, X-coord
+.byte $70, $06, $00, $88
+.byte $78, $07, $00, $80
+.byte $78, $08, $00, $88
+
+ADC add with carry
+
+Bounds
+"Keep in mind that sprite Y positions greater than $e0 will be below the 
+bottom of the viewable screen area."
+
+Controller	Keyboard
+Right	Right
+Left	Left
+Down	Down
+Up	Up
+Start	Enter
+Select	Tab
+B	d
+A	f
